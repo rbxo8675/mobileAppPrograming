@@ -580,3 +580,5 @@ int calculate(int x, int y, int z , Operation operation){
 
 ```
 
+> 이 정리 내용은 코드팩토리님의 강의 수강을 하면서 개인적으로 필기한 내용을 정리한 것임을 밝힙니다.
+
