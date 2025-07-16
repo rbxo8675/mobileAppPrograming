@@ -1,33 +1,71 @@
-# Flutter setting
+# Flutter 환경 설정 가이드 (Windows 기준)
 
-1. Flutter SDK 다운
-- flutter install 브라우저에 검색하여서 다운로드
-    - https://docs.flutter.dev/install/manual
-- 자신이 찾기 편한 곳에 압축 풀기
-    - 본인은 c드라이브에 압축을 풀도록 하겠음
-    - "program files" 와 같은 디렉토리는 공백이 있어 추후에 문젝가 될 수 있다.
+## 1. Flutter SDK 다운로드 및 설치
 
-2. Android Studio 설치
-- https://developer.android.com/studio
-- Android Studio 설정
-    - plug - in 메뉴 : Flutter 검색 후 설치
-    - projects -> More Actions 토글 바 -> SDK Manager
-        - SDK Tooks -> Android SDK Command-line Tools 설치
+- Flutter 공식 사이트에서 수동 설치  
+  → https://docs.flutter.dev/install/manual
 
-3. 환경변수 등록
-- 윈도우 검색 -> 환경 변수 검색
-    - Path -> 편집 -> 새로만들기
-    - 플러터의 bin 폴더의 경로를 추가
-
-4. 기타
-- window power shell -> "flutter doctor" 입력
-    - flutter 개발하는데 필요한 요소들을 확인
-    - 본인은 virtual studio (code 가 아님)가 깔려 있지 않아서 [!]가 떴다.
-    [image.png]
-    - 이런 에러가 뜨게 되는데 virtual studio를 다운 받으면서 워크로드에 "Desktop development with C++" 이렇게 되어있는 것을 체크하고 다운로드 받으면 된다.
-    - 만약에 워크로드에 보이지 않는다면 수동으로 다운로드 받아야한다.
-    - https://visualstudio.microsoft.com/ko/visual-cpp-build-tools/
-    - Build Tools 다운로드 하여 워크로드를 다운로드 한다.
+- 설치 방법  
+  1. 다운로드한 압축 파일을 원하는 위치에 해제 (예: `C:\flutter`)  
+  2. `Program Files`처럼 **공백이 포함된 폴더 경로는 사용하지 말 것**
 
 
-    
+
+## 2. Android Studio 설치 및 설정
+
+- Android Studio 다운로드  
+  → https://developer.android.com/studio
+
+### Android Studio 설정
+
+1. **Flutter 플러그인 설치**  
+   - `Settings` > `Plugins` 메뉴에서 Flutter 검색 후 설치  
+   - Dart 플러그인은 자동으로 함께 설치됨
+
+2. **SDK Tools 설치**  
+   - `More Actions` > `SDK Manager` 클릭  
+   - `SDK Tools` 탭으로 이동  
+   - `Android SDK Command-line Tools` 항목 체크 후 설치
+
+
+
+## 3. 환경 변수 등록 (Path 설정)
+
+1. Windows 검색창에서 `환경 변수 편집` 검색 및 실행  
+2. 시스템 변수 영역에서 `Path` 항목 선택 → `편집` 클릭  
+3. `새로 만들기` 클릭 후 다음 경로 추가:
+
+```bash
+C:\flutter\bin
+```
+
+
+
+## 4. Flutter Doctor로 설정 확인
+
+### PowerShell 또는 CMD에서 실행:
+
+```bash
+flutter doctor
+```
+
+- Flutter 개발에 필요한 요소들이 제대로 설치되어 있는지 점검함
+
+- 아래와 같이 [!] Visual Studio 관련 에러가 출력될 수 있음:
+
+![에러 스크린샷](/image.png)
+
+### 해결 방법
+1. Visual Studio 설치
+
+2. 설치 도중 워크로드(Workloads) 항목에서 아래 옵션 체크:
+
+    - Desktop development with C++
+
+3. 만약 해당 워크로드가 보이지 않는 경우, 아래 사이트에서 Build Tools만 수동 다운로드 가능  
+    → https://visualstudio.microsoft.com/ko/visual-cpp-build-tools/
+
+
+## 5. 참고 자료
+- Flutter 설치 관련 추가 설명은 다음 블로그를 참고할 것:  
+    → https://codingapple.com/unit/flutter-install-on-windows-and-mac/?id=19933
