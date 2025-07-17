@@ -13,7 +13,7 @@
 
 ## 2. Android Studio 설치 및 설정
 
-- Android Studio 다운로드  
+- Android Studio 다운로드 ` 
   → https://developer.android.com/studio
 
 ### Android Studio 설정
