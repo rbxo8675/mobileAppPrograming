@@ -125,7 +125,7 @@ print(name3!);    // null 아님을 보장
 
 ## 🔒 final & const
 
-* `final`: 한 번 설정된 값을 변경 불가
+* `final`: 한 번 설정된 값을 변경 불가, 빌드 타임 필요 없음
 * `const`: final과 유사하나 **빌드 타임에 값이 확정**되어야 함
 
 ```dart
