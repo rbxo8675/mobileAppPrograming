@@ -16,20 +16,24 @@ class  MyApp extends StatelessWidget {
 
     return MaterialApp(//실제로 코딩이 이루어지는 공간
         home: Scaffold(
-          
-          body: Row(
-            // mainAxisAlignment: MainAxisAlignment.center,//가운데 정렬 & main 축에 대해서 정렬
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            // crossAxisAlignment: ,//main 역축에 대해서 정렬 -> 상,하 폭이 필요함 -> container로 둘러싸야함
-            children : [
+          appBar: Text("앱임"),
+          body: Text("안녕"),
+          bottomNavigationBar: BottomAppBar(
+              : Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+          Icon(Icons.phone),
+          Icon(Icons.message),
+          Icon(Icons.contact_page),
 
-            Icon(Icons.star),
-            Icon(Icons.star),
-            Icon(Icons.star),
-            ],
-          ),
+          ],
+        )
+
+
+
     ),
-        
+    ),
+
     );
 
   }
