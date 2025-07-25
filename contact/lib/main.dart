@@ -16,10 +16,14 @@ class  MyApp extends StatelessWidget {
 
     return MaterialApp(//실제로 코딩이 이루어지는 공간
         home: Scaffold(
-          appBar: Text("앱임"),
+          appBar: AppBar(
+            backgroundColor: Colors.blue,
+              title: Text("앱임",
+              style: TextStyle(color: Colors.white),)
+          ),
           body: Text("안녕"),
           bottomNavigationBar: BottomAppBar(
-              : Row(
+            child : Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
           Icon(Icons.phone),
