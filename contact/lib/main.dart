@@ -21,22 +21,22 @@ class  MyApp extends StatelessWidget {
               title: Text("앱임",
               style: TextStyle(color: Colors.white),)
           ),
-          body: Text("안녕"),
-          bottomNavigationBar: BottomAppBar(//하단 바
-            child : SizedBox(//row 위젯을 사용하기 위해서 컨테이너로 감싸줌
-              //컨테이너 위젯에 린트가 뜨는 이유 : 컨테이너는 무겁기 때문에 SizedBox를 사용
-              height: 100, //높이 설정
-              child: Row( //가로로 배치
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: double.infinity, height: 50,
 
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,//정렬
-                children: [
-                Icon(Icons.phone),
-                Icon(Icons.message),
-                Icon(Icons.contact_page),
-                ],
+                margin: EdgeInsets.fromLTRB(0,20,0,0),//일부 여백을 넣는 법
+                // margin: EdgeInsets.all(20), //모든 방향에 여백을 넣는 법
+                // padding: EdgeInsets.all(20),
+
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black), //테두리 색상과 두께
               ),
-            )
-          ),
+              child: Text("dddd"),
+            ),
+          )
+
         ),
 
     );
