@@ -17,29 +17,21 @@ class  MyApp extends StatelessWidget {
     return MaterialApp(//실제로 코딩이 이루어지는 공간
         home: Scaffold(
           appBar: AppBar(//상단 바
-            backgroundColor: Colors.blue,
-              title: Text("앱임",
-              style: TextStyle(color: Colors.white),)
+            title: Text("앱임"),
           ),
-          body: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              width: double.infinity, height: 50,
-
-                margin: EdgeInsets.fromLTRB(0,20,0,0),//일부 여백을 넣는 법
-                // margin: EdgeInsets.all(20), //모든 방향에 여백을 넣는 법
-                // padding: EdgeInsets.all(20),
-
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black), //테두리 색상과 두께
+          body: SizedBox(
+            child: Text('안녕하세요', //텍스트 위젯),
+              style: TextStyle(
+                fontSize: 30, //폰트 크기
+                color: Color.from, //폰트 색상
               ),
-              child: Text("dddd"),
             ),
           )
+        )
 
-        ),
+        );
 
-    );
+
 
   }
 }
