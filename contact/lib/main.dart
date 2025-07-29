@@ -17,15 +17,43 @@ class  MyApp extends StatelessWidget {
     return MaterialApp(//실제로 코딩이 이루어지는 공간
         home: Scaffold(
           appBar: AppBar(//상단 바
-            title: Text("앱임"),
-          ),
-          body: SizedBox(
-            child: Text('안녕하세요', //텍스트 위젯),
-              style: TextStyle(
-                fontSize: 30, //폰트 크기
-                color: Color.from, //폰트 색상
-              ),
+
+
+            Row(
+              children: [
+                Text("금호동 3가"),
+                Icon(Icons.keyboard_arrow_down),
+              ],
             ),
+
+            Row(
+              children: [
+                Icon(Icons.search), //검색 아이콘
+                Icon(Icons.menu_sharp),
+                Icon(Icons.notifications),
+              ],
+            )
+             //알림 아이콘
+          ),
+          body: Row(
+            children: [
+              Image.asset(
+                "assets/images/1.png", //이미지 경로
+                width: 100, //너비
+                height: 100, //높이
+              ),
+              Column( //열
+                children: [
+                  Text("캐논 DSLR 100D (단렌즈, 충전기 16R기가SD 포함)"),
+                  Text("성동구 행당동  . 끌올 10분 전"),
+                  Text("210,000원"),
+                  Icon(Icons.favorite_border), //하트 아이콘
+                ],
+              ),
+
+
+            ],
+
           )
         )
 
