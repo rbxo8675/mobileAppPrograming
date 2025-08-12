@@ -1,0 +1,62 @@
+[
+  {
+    "id": "r1",
+    "title": "계란볶음밥",
+    "servings_base": 2,
+    "ingredients": [
+      {"name": "밥", "qty": 2, "unit": "공"},
+      {"name": "계란", "qty": 3, "unit": "개"},
+      {"name": "대파", "qty": 1, "unit": "대"},
+      {"name": "식용유", "qty": 1, "unit": "큰술"},
+      {"name": "간장", "qty": 1, "unit": "큰술"},
+      {"name": "소금", "qty": 1, "unit": "꼬집"}
+    ],
+    "steps": [
+      {"order": 1, "text": "팬을 달군 뒤 기름을 두른다.", "base_time_sec": 30, "action_tag": "heat"},
+      {"order": 2, "text": "계란을 풀어 스크램블한다.", "base_time_sec": 90, "action_tag": "stir"},
+      {"order": 3, "text": "밥을 넣고 고루 볶는다.", "base_time_sec": 120, "action_tag": "stir"},
+      {"order": 4, "text": "간장과 소금으로 간을 맞춘다.", "base_time_sec": 30, "action_tag": "season"},
+      {"order": 5, "text": "대파를 넣고 마무리한다.", "base_time_sec": 30, "action_tag": "finish"}
+    ]
+  },
+  {
+    "id": "r2",
+    "title": "김치찌개",
+    "servings_base": 2,
+    "ingredients": [
+      {"name": "김치", "qty": 200, "unit": "g"},
+      {"name": "돼지고기", "qty": 150, "unit": "g"},
+      {"name": "두부", "qty": 1, "unit": "모"},
+      {"name": "대파", "qty": 1, "unit": "대"},
+      {"name": "양파", "qty": 1, "unit": "개"},
+      {"name": "고춧가루", "qty": 1, "unit": "큰술"}
+    ],
+    "steps": [
+      {"order": 1, "text": "김치를 적당한 크기로 썬다.", "base_time_sec": 60, "action_tag": "chop"},
+      {"order": 2, "text": "돼지고기를 넣고 볶는다.", "base_time_sec": 120, "action_tag": "fry"},
+      {"order": 3, "text": "김치를 넣고 함께 볶는다.", "base_time_sec": 90, "action_tag": "fry"},
+      {"order": 4, "text": "물을 넣고 끓인다.", "base_time_sec": 300, "action_tag": "boil"},
+      {"order": 5, "text": "두부와 채소를 넣고 마무리한다.", "base_time_sec": 60, "action_tag": "finish"}
+    ]
+  },
+  {
+    "id": "r3",
+    "title": "된장찌개",
+    "servings_base": 2,
+    "ingredients": [
+      {"name": "된장", "qty": 2, "unit": "큰술"},
+      {"name": "두부", "qty": 1, "unit": "모"},
+      {"name": "애호박", "qty": 1, "unit": "개"},
+      {"name": "양파", "qty": 1, "unit": "개"},
+      {"name": "대파", "qty": 1, "unit": "대"},
+      {"name": "청양고추", "qty": 1, "unit": "개"}
+    ],
+    "steps": [
+      {"order": 1, "text": "채소들을 적당한 크기로 썬다.", "base_time_sec": 90, "action_tag": "chop"},
+      {"order": 2, "text": "물을 끓인다.", "base_time_sec": 180, "action_tag": "boil"},
+      {"order": 3, "text": "된장을 풀어 넣는다.", "base_time_sec": 30, "action_tag": "season"},
+      {"order": 4, "text": "채소들을 넣고 끓인다.", "base_time_sec": 240, "action_tag": "boil"},
+      {"order": 5, "text": "두부를 넣고 마무리한다.", "base_time_sec": 60, "action_tag": "finish"}
+    ]
+  }
+]

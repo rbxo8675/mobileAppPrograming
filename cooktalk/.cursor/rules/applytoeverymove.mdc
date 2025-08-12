@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+
+# Most Important rule
+- @prd.md의 제품을 만들고 있습니다.
+- 각 작업은 @tasklist.md 의 내용을 참고하여 수행합니다.
+- 작업할 때에는 그에 상응하는 테스트코드도 함께 만듭니다.
+
+---
+
