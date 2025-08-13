@@ -1,14 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
+@immutable
 class Recipe {
-  final String id;
-  final String title;
-  final int servingsBase;
-  final List<Ingredient> ingredients;
-  final List<RecipeStep> steps;
-
-  Recipe({
+  const Recipe({
     required this.id,
     required this.title,
     required this.servingsBase,
@@ -16,111 +10,61 @@ class Recipe {
     required this.steps,
   });
 
+  final String id;
+  final String title;
+  final int servingsBase;
+  final List<Ingredient> ingredients;
+  final List<RecipeStep> steps;
+
   factory Recipe.fromJson(Map<String, dynamic> json) {
     return Recipe(
       id: json['id'] as String,
       title: json['title'] as String,
       servingsBase: json['servings_base'] as int,
-      ingredients: (json['ingredients'] as List)
+      ingredients: (json['ingredients'] as List<dynamic>)
           .map((e) => Ingredient.fromJson(e as Map<String, dynamic>))
           .toList(),
-      steps: (json['steps'] as List)
+      steps: (json['steps'] as List<dynamic>)
           .map((e) => RecipeStep.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'servings_base': servingsBase,
-      'ingredients': ingredients.map((e) => e.toJson()).toList(),
-      'steps': steps.map((e) => e.toJson()).toList(),
-    };
-  }
-
-  @override
-  String toString() {
-    return 'Recipe(id: $id, title: $title, servingsBase: $servingsBase, ingredients: $ingredients, steps: $steps)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Recipe &&
-        other.id == id &&
-        other.title == title &&
-        other.servingsBase == servingsBase &&
-        listEquals(other.ingredients, ingredients) &&
-        listEquals(other.steps, steps);
-  }
-
-  @override
-  int get hashCode {
-    return Object.hash(id, title, servingsBase, Object.hashAll(ingredients), Object.hashAll(steps));
-  }
 }
 
+@immutable
 class Ingredient {
-  final String name;
-  final dynamic qty;
-  final String unit;
-
-  Ingredient({
+  const Ingredient({
     required this.name,
     required this.qty,
     required this.unit,
   });
 
+  final String name;
+  final num qty;
+  final String unit;
+
   factory Ingredient.fromJson(Map<String, dynamic> json) {
     return Ingredient(
       name: json['name'] as String,
-      qty: json['qty'],
+      qty: json['qty'] as num,
       unit: json['unit'] as String,
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'qty': qty,
-      'unit': unit,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'Ingredient(name: $name, qty: $qty, unit: $unit)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Ingredient &&
-        other.name == name &&
-        other.qty == qty &&
-        other.unit == unit;
-  }
-
-  @override
-  int get hashCode {
-    return name.hashCode ^ qty.hashCode ^ unit.hashCode;
-  }
 }
 
+@immutable
 class RecipeStep {
-  final int order;
-  final String text;
-  final int baseTimeSec;
-  final String actionTag;
-
-  RecipeStep({
+  const RecipeStep({
     required this.order,
     required this.text,
     required this.baseTimeSec,
     required this.actionTag,
   });
+
+  final int order;
+  final String text;
+  final int baseTimeSec;
+  final String actionTag;
 
   factory RecipeStep.fromJson(Map<String, dynamic> json) {
     return RecipeStep(
@@ -129,37 +73,5 @@ class RecipeStep {
       baseTimeSec: json['base_time_sec'] as int,
       actionTag: json['action_tag'] as String,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'order': order,
-      'text': text,
-      'base_time_sec': baseTimeSec,
-      'action_tag': actionTag,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'RecipeStep(order: $order, text: $text, baseTimeSec: $baseTimeSec, actionTag: $actionTag)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is RecipeStep &&
-        other.order == order &&
-        other.text == text &&
-        other.baseTimeSec == baseTimeSec &&
-        other.actionTag == actionTag;
-  }
-
-  @override
-  int get hashCode {
-    return order.hashCode ^
-        text.hashCode ^
-        baseTimeSec.hashCode ^
-        actionTag.hashCode;
   }
 }

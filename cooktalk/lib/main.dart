@@ -1,30 +1,26 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:cooktalk/providers/session_provider.dart';
 import 'package:cooktalk/screens/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const CookTalkApp());
+  runApp(const MyApp());
 }
 
-class CookTalkApp extends StatelessWidget {
-  const CookTalkApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => SessionProvider()),
-      ],
+    return ChangeNotifierProvider(
+      create: (context) => SessionProvider(),
       child: MaterialApp(
         title: 'CookTalk',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          fontFamily: 'Noto Sans KR', // 한글 폰트
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: const HomeScreen(),
-        debugShowCheckedModeBanner: false,
       ),
     );
   }

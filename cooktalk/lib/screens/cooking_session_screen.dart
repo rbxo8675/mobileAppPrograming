@@ -1,309 +1,205 @@
-import 'package:flutter/material.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:provider/provider.dart';
-import 'package:cooktalk/models/recipe.dart';
 import 'package:cooktalk/providers/session_provider.dart';
-import 'package:cooktalk/widgets/quick_commands.dart';
+import 'package:cooktalk/services/asr_service.dart';
+import 'package:cooktalk/services/command_parser.dart';
+import 'package:cooktalk/services/tts_service.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class CookingSessionScreen extends StatefulWidget {
-  final Recipe recipe;
-
-  const CookingSessionScreen({
-    super.key,
-    required this.recipe,
-  });
+  const CookingSessionScreen({super.key});
 
   @override
   State<CookingSessionScreen> createState() => _CookingSessionScreenState();
 }
 
 class _CookingSessionScreenState extends State<CookingSessionScreen> {
+  final TtsService _ttsService = TtsService();
+  final AsrService _asrService = AsrService();
+  final CommandParser _commandParser = CommandParser();
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+
   @override
   void initState() {
     super.initState();
-    // 세션 시작
+    WakelockPlus.enable();
+    _asrService.initialize(onError: (error) => _showError(error));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SessionProvider>().startSession(widget.recipe);
-      // 화면 꺼짐 방지
-      WakelockPlus.enable();
+      _speakCurrentStep();
+      _logEvent('session_start');
     });
   }
 
   @override
   void dispose() {
-    // 세션 종료
-    context.read<SessionProvider>().endSession();
-    // 화면 꺼짐 방지 해제
     WakelockPlus.disable();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.recipe.title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          Consumer<SessionProvider>(
-            builder: (context, session, child) {
-              return Text(
-                '${session.currentStepIndex + 1}/${session.totalSteps}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: Consumer<SessionProvider>(
-        builder: (context, session, child) {
-          if (session.currentRecipe == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+  Future<void> _logEvent(String name, {Map<String, Object>? parameters}) async {
+    await _analytics.logEvent(name: name, parameters: parameters);
+  }
 
-          return Column(
-            children: [
-              // 상단 정보 영역
-              _buildTopSection(session),
-              
-              // 메인 콘텐츠 영역
-              Expanded(
-                child: _buildMainContent(session),
-              ),
-              
-              // 하단 퀵 커맨드 영역
-              _buildBottomSection(session),
-            ],
-          );
-        },
-      ),
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 
-  Widget _buildTopSection(SessionProvider session) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // 진행률 표시
-          LinearProgressIndicator(
-            value: session.recipeProgress,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).primaryColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${(session.recipeProgress * 100).toInt()}% 완료',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMainContent(SessionProvider session) {
-    final currentStep = session.currentStep;
-    if (currentStep == null) {
-      return const Center(child: Text('단계를 불러올 수 없습니다.'));
+  void _speakCurrentStep() {
+    final session = Provider.of<SessionProvider>(context, listen: false);
+    if (session.currentStep != null) {
+      _ttsService.speak(session.currentStep!.text);
     }
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // 현재 단계 카드
-          Card(
-            elevation: 8,
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  // 단계 번호
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${currentStep.order}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 단계 설명
-                  Text(
-                    currentStep.text,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 타이머 표시
-                  if (session.hasTimer) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: session.isTimerRunning 
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: session.isTimerRunning ? Colors.green : Colors.orange,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            session.isTimerRunning ? Icons.timer : Icons.pause,
-                            color: session.isTimerRunning ? Colors.green : Colors.orange,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            session.formattedTimer,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: session.isTimerRunning ? Colors.green : Colors.orange,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // 타이머 진행률
-                    if (session.currentTimerSec > 0) ...[
-                      LinearProgressIndicator(
-                        value: session.stepProgress,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          session.isTimerRunning ? Colors.green : Colors.orange,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${(session.stepProgress * 100).toInt()}% 완료',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ],
-                ],
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 마이크 버튼
-          _buildMicrophoneButton(session),
-        ],
-      ),
-    );
   }
 
-  Widget _buildMicrophoneButton(SessionProvider session) {
-    final isDisabled = session.speaking || session.listening;
-    
-    return GestureDetector(
-      onTap: isDisabled ? null : () async {
-        if (session.listening) {
-          await session.stopVoiceRecognition();
-        } else {
-          await session.startVoiceRecognition();
-        }
-      },
-      child: Container(
-        width: 120,
-        height: 120,
-        decoration: BoxDecoration(
-          color: isDisabled 
-              ? Colors.grey[300]
-              : session.listening 
-                  ? Colors.red
-                  : Theme.of(context).primaryColor,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+  Future<void> _requestMicrophonePermission() async {
+    final status = await Permission.microphone.request();
+    if (status.isDenied) {
+      _showError('마이크 권한이 거부되었습니다.');
+      // Show a dialog to the user
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('마이크 권한 필요'),
+          content: const Text('음성 명령을 사용하려면 마이크 권한이 필요합니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                openAppSettings();
+                Navigator.pop(context);
+              },
+              child: const Text('설정으로 이동'),
             ),
           ],
         ),
-        child: Icon(
-          session.listening ? Icons.mic : Icons.mic_none,
-          size: 48,
-          color: Colors.white,
-        ),
-      ),
-    );
+      );
+    }
   }
 
-  Widget _buildBottomSection(SessionProvider session) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+  void _handleVoiceCommand(String recognizedWords) {
+    final command = _commandParser.parse(recognizedWords);
+    final session = Provider.of<SessionProvider>(context, listen: false);
+    _logEvent('asr_intent', parameters: {'intent': command.intent.toString()});
+
+    switch (command.intent) {
+      case CommandIntent.nextStep:
+        session.nextStep();
+        _logEvent('step_next');
+        break;
+      case CommandIntent.prevStep:
+        session.prevStep();
+        _logEvent('step_prev');
+        break;
+      case CommandIntent.repeatStep:
+        _speakCurrentStep();
+        _logEvent('step_repeat');
+        break;
+      case CommandIntent.startTimer:
+        if (command.durationSec != null) {
+          session.startTimer(command.durationSec!);
+          _logEvent('timer_start', parameters: {'duration': command.durationSec!});
+        }
+        break;
+      case CommandIntent.pauseTimer:
+        session.pauseTimer();
+        _logEvent('timer_pause');
+        break;
+      case CommandIntent.resumeTimer:
+        session.resumeTimer();
+        _logEvent('timer_resume');
+        break;
+      case CommandIntent.unknown:
+        _showError('알 수 없는 명령입니다.');
+        _logEvent('asr_unknown');
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SessionProvider>(
+      builder: (context, session, child) {
+        final currentStep = session.currentStep;
+        if (currentStep == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(
+              child: Text('레시피가 선택되지 않았습니다.'),
+            ),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(session.recipe?.title ?? ''),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: Center(child: Text('${session.currentStepIndex + 1} / ${session.recipe?.steps.length}')),
+              )
+            ],
           ),
-        ],
-      ),
-      child: QuickCommands(
-        onNext: session.nextStep,
-        onPrev: session.prevStep,
-        onRepeat: session.repeatStep,
-        onTimer3Min: () => session.startTimer(180),
-        onPause: session.pauseTimer,
-        onResume: session.resumeTimer,
-        isFirstStep: session.isFirstStep,
-        isLastStep: session.isLastStep,
-        hasTimer: session.hasTimer,
-        isTimerRunning: session.isTimerRunning,
-      ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  currentStep.text,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                if (session.currentTimerSec > 0)
+                  Text(
+                    '${(session.currentTimerSec ~/ 60).toString().padLeft(2, '0')}:${(session.currentTimerSec % 60).toString().padLeft(2, '0')}',
+                    style: Theme.of(context).textTheme.displayLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.skip_previous),
+                      onPressed: () {
+                        session.prevStep();
+                        _logEvent('step_prev');
+                      },
+                      iconSize: 48,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.mic),
+                      onPressed: () async {
+                        await _requestMicrophonePermission();
+                        _asrService.startListening(onResult: _handleVoiceCommand);
+                      },
+                      iconSize: 64,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.skip_next),
+                      onPressed: () {
+                        session.nextStep();
+                        _logEvent('step_next');
+                      },
+                      iconSize: 48,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
