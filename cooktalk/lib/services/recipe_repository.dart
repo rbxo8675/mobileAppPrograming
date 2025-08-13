@@ -4,7 +4,7 @@ import 'package:cooktalk/models/recipe.dart';
 import 'package:flutter/services.dart';
 
 class RecipeRepository {
-  final bool _useFirestore = false; // Switch between local and Firestore
+  final bool _useFirestore = true; // Switch between local and Firestore
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Recipe>> getRecipes() async {
