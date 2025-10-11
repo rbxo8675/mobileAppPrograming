@@ -82,7 +82,7 @@ class QuickCommands extends StatelessWidget {
               context,
               icon: Icons.play_arrow,
               label: '재개',
-              onPressed: (hasTimer && !isTimerRunning && isTimerRunning != null) ? onResume : null,
+              onPressed: (hasTimer && !isTimerRunning) ? onResume : null,
               color: Colors.green,
             ),
           ],

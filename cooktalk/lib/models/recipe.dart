@@ -8,6 +8,7 @@ class Recipe {
     required this.servingsBase,
     required this.ingredients,
     required this.steps,
+    this.youtubeUrl,
   });
 
   final String id;
@@ -15,6 +16,7 @@ class Recipe {
   final int servingsBase;
   final List<Ingredient> ingredients;
   final List<RecipeStep> steps;
+  final String? youtubeUrl;
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     return Recipe(
@@ -27,6 +29,7 @@ class Recipe {
       steps: (json['steps'] as List<dynamic>)
           .map((e) => RecipeStep.fromJson(e as Map<String, dynamic>))
           .toList(),
+      youtubeUrl: json['youtube_url'] as String?,
     );
   }
 }
