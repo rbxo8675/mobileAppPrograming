@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the user matches the requested userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // --- Collection Rules ---
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if true; 
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isOwner(userId);
+      
+      match /bookmarks/{bookmarkId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      match /history/{historyId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+       match /preferences/{prefId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Likes Collection (Top-level)
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Bookmarks Collection (Top-level)
+    match /bookmarks/{bookmarkId} {
+      // TEMP: Fully open for debugging
+      allow read, write: if isAuthenticated();
+    }
+
+    // Recipes Collection
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      
+      // Update rule:
+      // 1. Author can update everything.
+      // 2. Authenticated users can update specific counters (likeCount, bookmarkCount, viewCount).
+      allow update: if isAuthenticated() && (
+        resource.data.authorId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'bookmarkCount', 'viewCount', 'updatedAt'])
+      );
+      
+      allow delete: if isAuthenticated() 
+                    && resource.data.authorId == request.auth.uid;
+
+      // Reviews/Comments on Recipes
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() 
+                      && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAuthenticated() 
+                              && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Feed Posts Collection
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated() 
+                    && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isAuthenticated() 
+                            && resource.data.authorId == request.auth.uid;
+                            
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() 
+                      && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAuthenticated() 
+                              && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Cooking Sessions
+    match /cooking_sessions/{sessionId} {
+      allow read: if isAuthenticated() 
+                  && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() 
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() 
+                            && resource.data.userId == request.auth.uid;
+    }
+    
+    // Default deny all others
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

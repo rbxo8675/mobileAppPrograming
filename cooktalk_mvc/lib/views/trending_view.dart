@@ -16,7 +16,7 @@ class TrendingView extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Trending', style: Theme.of(context).textTheme.titleLarge),
+          // Text('Trending', style: Theme.of(context).textTheme.titleLarge),
           const SectionDivider(),
           if (rc.loadingTrending)
             const Center(

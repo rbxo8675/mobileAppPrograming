@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Helper Functions ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isSizeBelow(mb) {
+      return request.resource.size < mb * 1024 * 1024;
+    }
+
+    // --- Path Rules ---
+
+    // User Profile Images
+    // Path: users/{userId}/{fileName}
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId) 
+                   && isImage() 
+                   && isSizeBelow(5); // Max 5MB
+    }
+
+    // Recipe Images
+    // Path: recipes/{recipeId}/{fileName}
+    // Note: Checking recipe ownership in Storage rules is hard without 'resource.metadata.ownerId'.
+    // We assume the client sets metadata or we allow auth users to upload to recipes.
+    // A stricter approach is recipes/{userId}/{recipeId}/{fileName} but the service uses recipes/{recipeId}.
+    // We will allow any authenticated user to write to recipes/ folder for now, 
+    // but strictly, you should include userId in the path for better security.
+    match /recipes/{recipeId}/{allPaths=**} {
+      allow read: if true;
+      // Relaxed rule: Any auth user can upload. 
+      // Ideally: match /recipes/{userId}/{recipeId}/{fileName} and check isOwner(userId)
+      allow write: if isAuthenticated() 
+                   && isImage() 
+                   && isSizeBelow(10);
+    }
+
+    // Post Images
+    // Path: posts/{postId}/{fileName}
+    match /posts/{postId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() 
+                   && isImage() 
+                   && isSizeBelow(10);
+    }
+
+    // Cooking Session Images (likely private)
+    // Path: sessions/{sessionId}/{fileName}
+    // This is hard to secure if sessionId doesn't contain userId. 
+    // Assuming authenticated users can upload for their own sessions.
+    match /sessions/{sessionId}/{allPaths=**} {
+      allow read: if isAuthenticated(); 
+      allow write: if isAuthenticated() 
+                   && isImage();
+    }
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

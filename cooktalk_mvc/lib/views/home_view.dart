@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../controllers/app_controller.dart';
-import '../controllers/recipe_controller.dart' as controllers;
 import '../widgets/material_bottom_nav.dart';
+import '../core/utils/context_extensions.dart';
 
 import 'explore_view.dart';
 import 'trending_view.dart';
@@ -12,7 +13,6 @@ import '../widgets/fab_speed_dial.dart';
 import 'recipe_form_view.dart';
 import 'youtube_extract_view.dart';
 import 'my_recipes_view.dart';
-// import 'settings_view.dart';
 import 'profile_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -23,93 +23,111 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-
-  // Tabs are rendered by MaterialBottomNav
-
   @override
   Widget build(BuildContext context) {
-    final app = context.watch<AppController>();
-
-    Widget body;
-    switch (app.tabIndex) {
-      case 0:
-        body = const ExploreView();
-        break;
-      case 1:
-        body = const TrendingView();
-        break;
-      case 2:
-        body = const FeedView();
-        break;
-      case 3:
-        body = const MyRecipesView();
-        break;
-      case 4:
-        body = const ProfileView();
-        break;
-      default:
-        body = const ExploreView();
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(() {
-          switch (app.tabIndex) {
-            case 0:
-              return 'CookTalk'; // 홈만 CookTalk
-            case 1:
-              return '인기';
-            case 2:
-              return '피드';
-            case 3:
-              return '레시피';
-            case 4:
-              return '프로필';
-            default:
-              return 'CookTalk';
-          }
-        }()),
+        title: Selector<AppController, int>(
+          selector: (_, app) => app.tabIndex,
+          builder: (_, tabIndex, __) {
+            return Text(_getTabTitle(tabIndex));
+          },
+        ),
         centerTitle: false,
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, animation) {
-          final slide = Tween<Offset>(
-            begin: const Offset(0.02, 0),
-            end: Offset.zero,
-          ).animate(animation);
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(position: slide, child: child),
+      body: Selector<AppController, int>(
+        selector: (_, app) => app.tabIndex,
+        builder: (_, tabIndex, __) {
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) {
+              final slide = Tween<Offset>(
+                begin: const Offset(0.02, 0),
+                end: Offset.zero,
+              ).animate(animation);
+
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: slide,
+                  child: child,
+                ),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<int>(tabIndex),
+              child: KeepAliveWrapper(
+                child: _buildBody(tabIndex),
+              ),
+            ),
           );
         },
-        child: KeyedSubtree(
-          key: ValueKey(app.tabIndex),
-          child: KeepAliveWrapper(child: body),
-        ),
       ),
-      bottomNavigationBar: MaterialBottomNav(
-        activeIndex: app.tabIndex,
-        onChanged: app.setTab,
-        showActiveBadge: true,
+      bottomNavigationBar: Selector<AppController, int>(
+        selector: (_, app) => app.tabIndex,
+        builder: (_, tabIndex, __) {
+          return MaterialBottomNav(
+            activeIndex: tabIndex,
+            onChanged: context.app.setTab,
+            showActiveBadge: true,
+          );
+        },
       ),
-      floatingActionButton: app.tabIndex == 3
-          ? FloatingActionButton(
-              onPressed: () {
-                showFabMenu(
-                  context,
-                  onAddManual: () => Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => const RecipeFormView())),
-                  onExtractYoutube: () => Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => const YoutubeExtractView())),
-                );
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: Selector<AppController, bool>(
+        selector: (_, app) => app.tabIndex == 3,
+        builder: (_, isRecipeTab, __) {
+          if (!isRecipeTab) return const SizedBox.shrink();
+
+          return FloatingActionButton(
+            onPressed: () {
+              showFabMenu(
+                context,
+                onAddManual: () => context.push(const RecipeFormView()),
+                onExtractYoutube: () =>
+                    context.push(const YoutubeExtractView()),
+              );
+            },
+            child: const Icon(Icons.add),
+          );
+        },
+      ),
     );
+  }
+
+  String _getTabTitle(int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return 'CookTalk';
+      case 1:
+        return 'Trending';
+      case 2:
+        return 'Feed';
+      case 3:
+        return 'My Recipes';
+      case 4:
+        return 'Profile';
+      default:
+        return 'CookTalk';
+    }
+  }
+
+  Widget _buildBody(int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return const ExploreView();
+      case 1:
+        return const TrendingView();
+      case 2:
+        return const FeedView();
+      case 3:
+        return const MyRecipesView();
+      case 4:
+        return const ProfileView();
+      default:
+        return const ExploreView();
+    }
   }
 }
 
@@ -121,7 +139,7 @@ class _YouTubeImportDialog extends StatefulWidget {
 }
 
 class _YouTubeImportDialogState extends State<_YouTubeImportDialog> {
-  final ctrl = TextEditingController();
+  final TextEditingController ctrl = TextEditingController();
   bool loading = false;
 
   @override
@@ -137,7 +155,7 @@ class _YouTubeImportDialogState extends State<_YouTubeImportDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: const Text('Cancel'),
         ),
         FilledButton(
@@ -145,17 +163,16 @@ class _YouTubeImportDialogState extends State<_YouTubeImportDialog> {
               ? null
               : () async {
                   if (ctrl.text.isEmpty) return;
+
                   setState(() => loading = true);
-                  await context
-                      .read<controllers.RecipeController>()
-                      .importFromYouTube(ctrl.text);
-                  if (mounted) {
-                    setState(() => loading = false);
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Imported!')),
-                    );
-                  }
+
+                  await context.recipes.importFromYouTube(ctrl.text);
+
+                  if (!context.mounted) return;
+
+                  setState(() => loading = false);
+                  context.pop();
+                  context.showSuccessSnackBar('Imported!');
                 },
           child: loading
               ? const SizedBox(
@@ -167,5 +184,11 @@ class _YouTubeImportDialogState extends State<_YouTubeImportDialog> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    ctrl.dispose();
+    super.dispose();
   }
 }

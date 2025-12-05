@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "171932459961",
+    "project_id": "cooktalk-7de20",
+    "storage_bucket": "cooktalk-7de20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171932459961:android:3f0c6263613eb36333cc68",
+        "android_client_info": {
+          "package_name": "com.example.cooktalk_mvc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "171932459961-vu8jthu0jh01o2huj2rn0efs1u7vfd0s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFhWe5yBP1qfoXSdurKP2Z2NFUhhjNiQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "171932459961-vu8jthu0jh01o2huj2rn0efs1u7vfd0s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
