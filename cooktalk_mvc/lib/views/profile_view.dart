@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../controllers/app_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/recipe_controller.dart';
-import '../models/recipe.dart';
 import '../core/utils/context_extensions.dart';
+import '../data/mock/mock_data.dart';
 import 'login_view.dart';
 import 'link_account_view.dart';
 
@@ -167,20 +167,22 @@ class _ProfileViewState extends State<ProfileView> {
           Text('요리 통계', style: context.textTheme.titleMedium),
           const SizedBox(height: 12),
           
-          // [최적화] `RecipeController`의 레시피 목록이 변경될 때만 통계 부분을 다시 계산하고
-          // UI를 업데이트하기 위해 `Selector`를 사용합니다. `_RecipeStats` 헬퍼 클래스는
-          // 여러 통계 값 중 하나라도 변경되었을 때만 리빌드를 트리거하도록 돕습니다.
+          // [MVP 하이브리드] 실제 데이터 + 목업 데이터 혼합
+          // - 완료한 요리: 실제 (rc.completedCount)
+          // - 스크랩한 레시피: 실제 (rc.savedRecipes.length)
+          // - 좋아하는 레시피: 목업 (MockData.mockLikedRecipeCount)
+          // - 팔로잉: 목업 (MockData.mockFollowingCount)
           Selector<RecipeController, _RecipeStats>(
             selector: (_, rc) {
-              final Map<String, Recipe> all = {
-                for (final e in rc.explore) e.id: e,
-                for (final e in rc.trending) e.id: e,
-                for (final e in rc.myRecipes) e.id: e,
-              };
               return _RecipeStats(
+                // 실제 데이터: 완료한 요리 개수
                 completed: rc.completedCount,
-                liked: all.values.where((e) => e.liked).length,
-                scrapped: all.values.where((e) => e.bookmarked).length,
+                // 목업 데이터: 좋아하는 레시피 개수
+                liked: MockData.mockLikedRecipeCount,
+                // 실제 데이터: 스크랩(북마크)한 레시피 개수
+                scrapped: rc.savedRecipes.length,
+                // 목업 데이터: 팔로잉 수
+                following: MockData.mockFollowingCount,
               );
             },
             builder: (_, stats, __) {
@@ -188,6 +190,7 @@ class _ProfileViewState extends State<ProfileView> {
                 children: [
                   Row(
                     children: [
+                      // 완료한 요리 (실제 데이터)
                       Expanded(
                         child: _StatTile(
                           color: context.colorScheme.errorContainer,
@@ -197,6 +200,7 @@ class _ProfileViewState extends State<ProfileView> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      // 좋아하는 레시피 (목업 데이터)
                       Expanded(
                         child: _StatTile(
                           color: context.colorScheme.secondaryContainer,
@@ -208,36 +212,28 @@ class _ProfileViewState extends State<ProfileView> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // [최적화] 로그인 상태가 변경될 때만 이 부분을 다시 빌드합니다.
-                  Selector<AuthController, bool>(
-                    selector: (_, auth) => auth.isAuthenticated,
-                    builder: (_, isAuthenticated, __) {
-                      // 비로그인 상태에서는 '스크랩'과 '팔로잉' 통계를 보여주지 않습니다.
-                      if (!isAuthenticated) {
-                        return const SizedBox.shrink();
-                      }
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: _StatTile(
-                              color: context.colorScheme.tertiaryContainer,
-                              onColor: context.colorScheme.onTertiaryContainer,
-                              value: stats.scrapped,
-                              label: '스크랩한 레시피',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StatTile(
-                              color: context.colorScheme.surface,
-                              onColor: context.colorScheme.onSurface,
-                              value: 1, // TODO: 실제 팔로잉 수 데이터 연동 필요
-                              label: '팔로잉',
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                  Row(
+                    children: [
+                      // 스크랩한 레시피 (실제 데이터)
+                      Expanded(
+                        child: _StatTile(
+                          color: context.colorScheme.tertiaryContainer,
+                          onColor: context.colorScheme.onTertiaryContainer,
+                          value: stats.scrapped,
+                          label: '스크랩한 레시피',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // 팔로잉 (목업 데이터)
+                      Expanded(
+                        child: _StatTile(
+                          color: context.colorScheme.surface,
+                          onColor: context.colorScheme.onSurface,
+                          value: stats.following,
+                          label: '팔로잉',
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               );
@@ -452,18 +448,22 @@ class _ProfileViewState extends State<ProfileView> {
 
 /// `Selector` 위젯의 성능 최적화를 위해 사용되는 통계 데이터 래퍼 클래스입니다.
 ///
-/// `RecipeController`의 여러 상태 값 중, 이 클래스에 포함된 값이 변경될 때만
-/// `Selector`의 `builder`가 다시 실행되도록 `operator ==`와 `hashCode`를 오버라이드합니다.
-/// 이렇게 하면 관련 없는 상태 변경으로 인한 불필요한 UI 리빌드를 막을 수 있습니다.
+/// MVP에서는 실제 데이터와 목업 데이터를 혼합하여 사용합니다:
+/// - completed: 실제 완료한 요리 개수
+/// - scrapped: 실제 스크랩(북마크)한 레시피 개수
+/// - liked: 목업 좋아하는 레시피 개수
+/// - following: 목업 팔로잉 수
 class _RecipeStats {
-  final int completed;
-  final int liked;
-  final int scrapped;
+  final int completed;  // 실제
+  final int liked;      // 목업
+  final int scrapped;   // 실제
+  final int following;  // 목업
 
   _RecipeStats({
     required this.completed,
     required this.liked,
     required this.scrapped,
+    required this.following,
   });
 
   @override
@@ -473,10 +473,12 @@ class _RecipeStats {
           runtimeType == other.runtimeType &&
           completed == other.completed &&
           liked == other.liked &&
-          scrapped == other.scrapped;
+          scrapped == other.scrapped &&
+          following == other.following;
 
   @override
-  int get hashCode => completed.hashCode ^ liked.hashCode ^ scrapped.hashCode;
+  int get hashCode =>
+      completed.hashCode ^ liked.hashCode ^ scrapped.hashCode ^ following.hashCode;
 }
 
 /// 통계 정보를 표시하는 타일 위젯입니다.
